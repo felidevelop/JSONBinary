@@ -1,0 +1,55 @@
+<html>
+   <head>
+      <script src="JSONBinary.min.js"></script>
+      <script src="jquery-3.5.1.min.js"></script>
+      <script>
+         $(function(){
+
+            $.ajax({
+               type: "POST",
+               url: "server.php",
+               xhrFields: {
+                  responseType: 'arraybuffer'
+               },
+               success: function(data){
+                  data = JSONBinaryDecode(data);
+                  console.log("Estructura del JSON recibido con un Uint8Array como parametro")
+                  console.log(data);
+
+                  const blob = new Blob([data[0].content], { type: 'application/pdf' });
+                  const url = URL.createObjectURL(blob);
+
+                  $("#pdf").attr("src", url);
+               }
+            });
+
+         });
+
+         (async () => {
+            const response = await fetch('server.php', {
+               method: 'POST',
+            });
+
+            if (!response.ok) throw new Error('Error en la red');
+            const buffer = await response.arrayBuffer();
+            const data = JSONBinaryDecode(buffer);
+
+            console.log("Estructura del JSON recibido con fetch:", data);
+            const blob = new Blob([data[0].content], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            
+            const iframe = document.querySelector("#pdf2");
+            iframe.src = url;
+         })();
+      </script>
+   </head>
+   <body>
+      <p>Revise el inspector de elementos para observar el objeto json recibido</p>
+      Carga del pdf con ajax<br>
+      <iframe id="pdf" style="width:50%;height:40vh;" frameborder="0"></iframe>
+      <br>
+      Carga del pdf con fetch<br>
+      <iframe id="pdf2" style="width:50%;height:40vh;" frameborder="0"></iframe>
+
+   </body>
+</html>
